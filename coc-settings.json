@@ -1,0 +1,5 @@
+{
+    "clangd.path": "clangd",
+    "diagnostic.displayByAle": true,
+    "clangd.compilationDatabaseCandidates": ["bulid", "build-debug"]
+}

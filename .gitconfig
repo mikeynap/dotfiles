@@ -1,0 +1,13 @@
+[user]
+	email = micmoo@me.com
+	name = Mike Napolitano
+[push]
+	autoSetupRemote = true
+[rerere]
+	enabled = true
+	autoupdate = true
+[rebase]
+	autosquash = true
+
+[alias]
+  fixup = "!git log -n 15 --pretty=format:'%h %s' --no-merges | fzf | cut -c -7 | xargs -o git commit --fixup"
