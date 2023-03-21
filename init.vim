@@ -11,7 +11,7 @@ set expandtab
 set shiftwidth=4
 set complete=
 set showtabline=1
-set shell=/ctc/users/napolitm/usr/bin/bash
+#set shell=/ctc/users/napolitm/usr/bin/bash
 set path+=**                          " Search recursively through directories
 set autoread                          " Auto reload changed files
 set wildmenu                          " Tab autocomplete in command mode
@@ -20,7 +20,7 @@ set pumheight=10
 set background=dark
 
 colorscheme hybrid_material
-let $BASH_ENV="/home/napolitm/.vim_bash_env"
+#let $BASH_ENV="/home/napolitm/.vim_bash_env"
 let mapleader=","
 
 
@@ -70,15 +70,13 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 let g:floaterm_keymap_toggle = '<Leader>t'
 let g:floaterm_wintype = 'split'
 let g:floaterm_height = 0.3
-let g:floaterm_shell = 'tmux -u attach-session -t vim || tmux new -t vim'
+let g:floaterm_shell = 'screen -D -RR vim'
 autocmd bufenter * if (winnr("$") == 1 && &buftype == "terminal") | q | endif
 
 " === Plugins === "
 call plug#begin('~/.vim/plugged')
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'dense-analysis/ale'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
 Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'vim-airline/vim-airline'
 Plug 'preservim/nerdtree'
@@ -87,6 +85,10 @@ Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-surround'
 Plug 'windwp/nvim-autopairs'
 Plug 'voldikss/vim-floaterm'
+Plug 'vim-autoformat/vim-autoformat'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.1' }
+"Plug 'beauwilliams/focus.nvim'
 call plug#end()
 
 "=== Plugin PostSetup === " 
@@ -98,12 +100,10 @@ EOF
 " === Keybinds === "
 
 " ==== Files ==== "
-nnoremap <C-f> :Rg<cr>
-nnoremap <C-p> :GFiles<cr>
-nnoremap <Leader>p :GFiles %:p:h<cr>
-nnoremap <Leader>[ :Files /<cr>
+nnoremap <C-f> <cmd>Telescope live_grep<cr>
+nnoremap <C-p> <cmd>Telescope find_files<cr>
 noremap <Leader><Tab> :bnext<CR>
-noremap <Leader>f :NERDTreeToggle %<CR>
+noremap <Leader>f :NERDTreeToggle<CR>
 nnoremap <leader>h :call HeaderToggle()<cr>
 
 " ==== CoQ ==== "
@@ -116,6 +116,25 @@ nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
 " === Other === "
-imap ;; <Esc>
+nnoremap <Leader>q :bd<cr>
 nnoremap <SPACE> <Nop>
+inoremap <c-w> <c-o>:w<cr>
 
+" === Window Management === "
+command -bar -nargs=+ -complete=buffer Sbuffers execute map([<f-args>], {_, b -> printf("sbuffer %s", b)})->join("|")
+nnoremap <leader>z :ls<cr>:Sbuffers<space>
+command -bar -nargs=+ -complete=buffer Vbuffers execute map([<f-args>], {_, b -> printf("vsplit \#%s", b)})->join("|")
+nnoremap <leader>v :ls<cr>:Vbuffers<space>
+
+" === Commands === "
+command Vimc :e ~/.config/nvim/init.vim
+command Source :source ~/.config/nvim/init.vim
+
+command -nargs=1 SaveAs :execute 'saveas ' . expand('%:h') . '/' . <q-args>
+command Ls :! 'ls' '%:h'
+
+fun CurrentDirFileList(A,L,P)
+    return split(system('ls ' . expand('%:h')), '\n')
+endfun
+command -nargs=1 -complete=customlist,CurrentDirFileList Edit :execute 'edit ' . expand('%:h') . '/' . <q-args> 
+command -nargs=0 EditAll :execute 'args %:h/*'

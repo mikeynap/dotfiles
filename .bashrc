@@ -36,6 +36,25 @@ function untar {
     tar xf $1 && rm $1 
 }
 
+
+alias configurep="./configure --prefix=/ctc/users/napolitm/usr"
+alias more="less -R"
+alias less="/usr/bin/less -R"
+alias rg='~/.cargo/bin/rg --color=always'
+alias cat='bat'
+
+function rgvim {
+    rg -l --color=never $1 | xargs -o nvim
+}
+
+function fdvim {
+    fd --color=never $1 | xargs -o nvim
+}
+
+function gitprune {
+     git for-each-ref --sort='-committerdate' --format='%(refname)%09%(committerdate)' refs/heads | sed -e 's-refs/heads/--' | gawk -v days=${1:-30} '{ "date --date="$3"-"$4"-"$6 " +%s"  |& getline then ; "date +%s" |& getline now; diff=int((now-then)/86400);  if (diff > days) print $1}' | xargs git branch -D
+}
+
 alias configurep="./configure --prefix=/home/napolitm/usr"
 export PATH=/home/napolitm/usr/bin:$PATH
 
@@ -68,4 +87,5 @@ function conan_path {
 	stat ~/.conan/data/$pkg/$2/**/package/* -c "%y %n" | sort -r | head -n $headN | awk ' {print $NF } '
 }
 
+export PROMPT_COMMAND="history -a; history -c; history -r; "
 shopt -s direxpand

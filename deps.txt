@@ -1,0 +1,13 @@
+[source]
+git
+bash 
+glab
+lddtree
+autojump
+
+[cargo]
+bat
+fd-find
+git-absorb
+git-branchless
+ripgrep
