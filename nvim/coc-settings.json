@@ -1,0 +1,8 @@
+{
+    "clangd.path": "/usr/bin/clangd",
+	"diagnostic.displayByAle": false,
+    "clangd.argumenets": ["--background-index", "--clang-tidy", "-j"],
+	"clangd.compilationDatabaseCandidates": ["."],
+    "inlayHint.enable": false,
+    "clangd.inlayHints.enable": false
+}

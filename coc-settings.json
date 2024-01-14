@@ -1,8 +1,0 @@
-{
-    "clangd.path": "clangd",
-    "diagnostic.displayByAle": true,
-    "clangd.compilationDatabaseCandidates": ["bulid", "build-debug"],
-    "clangd.argumenets": ["--background-index"],
-    "inlayHint.enable": false,
-    "clangd.inlayHints.enable": false
-}
