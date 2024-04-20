@@ -8,6 +8,7 @@ set showcmd                           " Show size of visual selection
 set tabstop=4
 set softtabstop=4
 set expandtab
+set termguicolors
 set shiftwidth=4
 set complete=
 set showtabline=1
@@ -60,14 +61,9 @@ endfunction
 
 " ==== Airline Config ====" 
 
-function Get_current_function() abort
-      return get(b:, 'coc_current_function', '')
-endfunction
-
 let g:airline#extensions#tabline#enabled = 1
 let g:thisRepoBase = fnamemodify(getcwd(), ":t")
 let g:airline_section_x = g:thisRepoBase
-let g:airline_section_y = '%{Get_current_function()}'
 
 " ==== System Plugins Config ===="
 let g:netrw_banner=0        " disable annoying banner
@@ -78,12 +74,10 @@ let g:netrw_list_hide='/\.vs,Build/.*,Libraries/.*,Include/.*,Resources/Objects/
 let g:formatters_c = ['clangformat']
 let g:formatters_cpp = ['clangformat']
 
-let g:python3_host_prog = "/usr/bin/python3"
-
 " === Plugins === "
 call plug#begin('~/.vim/plugged')
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'vim-airline/vim-airline'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
@@ -104,6 +98,14 @@ Plug 'MunifTanjim/nui.nvim'
 Plug 'sindrets/diffview.nvim'
 Plug 'stevearc/dressing.nvim'
 Plug 'nvim-tree/nvim-web-devicons'
+Plug 'harrisoncramer/gitlab.nvim'
+Plug 'mikeynap/telescope-coc.nvim'
+Plug 'tpope/vim-repeat'
+Plug 'ggandor/leap.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'AlexvZyl/nordic.nvim', { 'branch': 'main' }
+Plug 'sainnhe/sonokai'
+Plug 'nvim-telescope/telescope-live-grep-args.nvim'
 
 call plug#end()
 
@@ -114,8 +116,99 @@ require("diffview").setup()
 require("nvim-autopairs").setup {}
 -- To get fzf loaded and working with telescope, you need to call
 require('user.telescope')
-require('telescope').load_extension('fzf')
+require('leap').create_default_mappings() 
+--require 'nordic' .load()
+
+require('telescope').load_extension("live_grep_args")
+require('telescope').load_extension("fzf")
+require("telescope").load_extension("file_browser")
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>fb",
+  ":Telescope file_browser<CR>",
+  { noremap = true }
+)
+
+-- open file_browser with the path of the current buffer
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>fp",
+  ":Telescope file_browser path=%:p:h select_buffer=true<CR>",
+  { noremap = true }
+)
+
+vim.keymap.set("n", "<C-f>", function() require("telescope").extensions.live_grep_args.live_grep_args( 
+    { search_dirs = {"cpp"},
+  vimgrep_arguments = {
+    -- all required except `--smart-case`
+    "rg",
+    "--color=never",
+    "--no-heading",
+    "--with-filename",
+    "--line-number",
+    "--column",
+    "--smart-case",
+    -- add your options
+	"--ignore-file=/~.testignore"
+  } }) end, opts)
+
+vim.keymap.set("n", "gor", "<cmd>Telescope coc request<cr>")
+vim.keymap.set("n", "gom", "<cmd>Telescope coc onMessage<cr>")
+vim.keymap.set("n", "gr", "<cmd>Telescope coc references<cr>")
+vim.keymap.set("n", "gw", "<cmd>Telescope buffers<cr>")
+local live_grep_args_shortcuts = require("telescope-live-grep-args.shortcuts")
+vim.keymap.set("n", "gs", live_grep_args_shortcuts.grep_word_under_cursor)
+
+
+require'nvim-treesitter.configs'.setup {
+  -- A list of parser names, or "all" (the five listed parsers should always be installed)
+  ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "cpp", "python", "bash", "json", "yaml", "dockerfile"},
+
+  -- Install parsers synchronously (only applied to `ensure_installed`)
+  sync_install = false,
+
+  -- Automatically install missing parsers when entering buffer
+  -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+  auto_install = true,
+
+  -- List of parsers to ignore installing (or "all")
+  ignore_install = { "javascript" },
+
+  ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
+  -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
+
+  highlight = {
+    enable = true,
+
+    -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
+    -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
+    -- the name of the parser)
+    -- list of language that will be disabled
+    -- Or use a function for more flexibility, e.g. to disable slow treesitter highlight for large files
+    disable = function(lang, buf)
+        local max_filesize = 1000 * 1024 -- 100 KB
+        local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+        if ok and stats and stats.size > max_filesize then
+            return true
+        end
+    end,
+
+    -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+    -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+    -- Using this option may slow down your editor, and you may see some duplicate highlights.
+    -- Instead of true it can also be a list of languages
+    additional_vim_regex_highlighting = false,
+  },
+}
+
+
 EOF
+let g:airline_theme = 'sonokai'
+let g:sonokai_style = 'maia'
+"let g:sonokai_style = 'shusia'
+let g:sonokai_disable_italic_comment = 1
+
+colorscheme sonokai
 
 " === Keybinds === "
 
@@ -139,18 +232,19 @@ nmap <silent> ]c <Plug>(coc-diagnostic-next)
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
 " Use `[g` and `]g` to navigate diagnostics
 " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
+nmap <leader> gn <Plug>(coc-git-nextchunk)
+nmap <leader> gp <Plug>(coc-git-prevchunk)
 
 " Remap keys for applying code actions at the cursor position
 nmap <leader>ac  <Plug>(coc-codeaction-cursor)
 " Remap keys for apply code actions affect whole buffer
 nmap <leader>as  <Plug>(coc-codeaction-source)
 " Apply the most preferred quickfix action to fix diagnostic on the current line
-nmap <leader>af  <Plug>(coc-fix-current)
+nmap gf  <Plug>(coc-fix-current)
 " Run the Code Lens action on the current line
 nmap <leader>al  <Plug>(coc-codelens-action)
 xmap if <Plug>(coc-funcobj-i)
@@ -202,6 +296,7 @@ tnoremap <Esc> <C-\><C-n>
 tnoremap <Leader>w <C-\><C-n><C-w><C-w>
 
 " === Commands === "
+nmap <silent> gb :Git blame<CR>
 command Vimc :e ~/.config/nvim/init.vim
 command Source :source ~/.config/nvim/init.vim
 

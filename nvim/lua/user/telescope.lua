@@ -5,7 +5,7 @@ end
 
 telescope.load_extension("ui-select")
 telescope.load_extension("file_browser")
-
+telescope.load_extension('fzf')
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local conf = require("telescope.config").values
@@ -13,6 +13,7 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local utils = require "telescope.utils"
 local builtin = require("telescope.builtin")
+
 
 telescope.setup {
     defaults = {
